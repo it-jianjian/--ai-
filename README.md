@@ -1,4 +1,4 @@
-# jianjian-agent（zksh + zksh-ui）
+# 智康守护说明文档
 
 面向健康体检 / 检验报告场景的示例项目：后端提供账号与对话、报告解析管线、健康知识库（RAG）、通知等能力；前端为 Vue 3 管理端，通过 HTTP 调用后端 API。
 
@@ -70,6 +70,7 @@ $env:MYSQL_PASSWORD = "your-mysql-password"
 $env:JWT_SECRET = "至少 32 字节的随机串"
 $env:API_KEY = "sk-xxxx"
 ```
+![Uploading image.png…]()
 
 ### 2. 启动后端
 
