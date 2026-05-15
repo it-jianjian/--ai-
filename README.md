@@ -70,6 +70,7 @@ $env:MYSQL_PASSWORD = "your-mysql-password"
 $env:JWT_SECRET = "至少 32 字节的随机串"
 $env:API_KEY = "sk-xxxx"
 ```
+![Uploading image.png…]()
 
 ### 2. 启动后端
 
