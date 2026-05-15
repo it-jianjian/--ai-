@@ -8,6 +8,7 @@ import {
   listAiSessionMessages,
   listAiSessions,
   listNotifications,
+  PENDING_REPORT_QUESTION_KEY,
   renameAiSession,
   sendAiMessageStream
 } from "../api";
@@ -280,11 +281,34 @@ async function send() {
   }
 }
 
+function consumePendingReportQuestion() {
+  const raw = sessionStorage.getItem(PENDING_REPORT_QUESTION_KEY);
+  if (!raw) return;
+  sessionStorage.removeItem(PENDING_REPORT_QUESTION_KEY);
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  const q = String(parsed?.question || "").trim();
+  if (!q) return;
+  const maxAgeMs = 60 * 60 * 1000;
+  if (parsed.at != null && Date.now() - Number(parsed.at) > maxAgeMs) return;
+  const taskId = parsed.taskId != null ? String(parsed.taskId) : "";
+  const prefix = taskId
+    ? `我刚上传并完成报告解读（任务编号 ${taskId}），健康档案应已同步。请结合最新档案回答：`
+    : `我刚上传并完成报告解读，健康档案应已同步。请结合最新档案回答：`;
+  question.value = `${prefix}${q}`;
+  ElMessage.info("已从报告解读带入问题，可修改后再点发送");
+}
+
 onMounted(async () => {
   try {
     await loadSessions(false);
     await loadMessages();
     await refreshSharedMetrics();
+    consumePendingReportQuestion();
     metricsTimer = setInterval(() => {
       refreshSharedMetrics();
     }, 30000);

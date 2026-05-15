@@ -1,6 +1,9 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
 
+/** 报告页解读成功后跳转咨询台时，经 sessionStorage 传递用户同时填写的问题 */
+export const PENDING_REPORT_QUESTION_KEY = "zksh_pending_report_question";
+
 const api = axios.create({
   baseURL: "http://localhost:8080"
 });

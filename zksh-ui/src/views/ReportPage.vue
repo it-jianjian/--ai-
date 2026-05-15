@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { createReportTask, getReportTaskStatus, listReportTasks } from "../api";
+import { createReportTask, getReportTaskStatus, listReportTasks, PENDING_REPORT_QUESTION_KEY } from "../api";
 
+const router = useRouter();
 const accepted = ".jpg,.jpeg,.png,.pdf,.webp";
 const fileRef = ref(null);
 const selectedFile = ref(null);
@@ -11,6 +13,8 @@ const uploading = ref(false);
 const taskInfo = ref(null);
 const pollTimer = ref(null);
 const taskHistory = ref([]);
+/** 可选：上传时一并想好要问的问题；入健康档案成功后再跳转咨询台并预填输入框 */
+const withQuestion = ref("");
 
 const stageList = [
   { key: "UPLOADED", title: "资料已接收", desc: "报告文件完成上传，任务进入队列" },
@@ -112,6 +116,23 @@ async function pollTask(taskId) {
     if (status === "SUCCEEDED") {
       ElMessage.success("报告解读完成，已同步到健康档案");
       await loadTaskHistory();
+      const q = withQuestion.value.trim();
+      if (q) {
+        try {
+          sessionStorage.setItem(
+            PENDING_REPORT_QUESTION_KEY,
+            JSON.stringify({
+              taskId: taskInfo.value.taskId,
+              question: q,
+              at: Date.now()
+            })
+          );
+        } catch (_) {
+          /* ignore quota */
+        }
+        withQuestion.value = "";
+        router.push("/ai");
+      }
       return;
     }
     if (status === "FAILED") {
@@ -156,6 +177,7 @@ function resetAll() {
   clearTimer();
   selectedFile.value = null;
   taskInfo.value = null;
+  withQuestion.value = "";
   if (fileRef.value) {
     fileRef.value.value = "";
   }
@@ -195,6 +217,22 @@ onBeforeUnmount(() => clearTimer());
       <div v-if="selectedFile" class="selected-file">
         <el-tag type="success" effect="light">已选择：{{ selectedFile.name }}</el-tag>
       </div>
+    </div>
+
+    <div class="with-question-block">
+      <div class="with-question-label">同时想问（可选）</div>
+      <el-input
+        v-model="withQuestion"
+        type="textarea"
+        :rows="3"
+        maxlength="800"
+        show-word-limit
+        placeholder="例如：哪些指标需要重点复查？解读成功并入库后会跳转到咨询台，并预填此处内容供你修改后发送。"
+        :disabled="uploading"
+      />
+      <p v-if="withQuestion.trim()" class="with-question-hint">
+        解读全部完成后将跳转到「AI 健康咨询台」，并预填该问题（请先保持页面不要关闭；到咨询台后请自行点发送）。
+      </p>
     </div>
 
     <div class="actions" style="margin-top: 14px">
@@ -347,6 +385,27 @@ onBeforeUnmount(() => clearTimer());
 
 .selected-file {
   margin-top: 16px;
+}
+
+.with-question-block {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-100);
+  background: var(--white);
+}
+
+.with-question-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.with-question-hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
 .progress-board {
