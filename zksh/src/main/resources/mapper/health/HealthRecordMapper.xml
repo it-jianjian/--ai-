@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.HealthRecordMapper">
+
+    <resultMap id="HealthRecordResultMap" type="com.jianjian.ai.zksh.domain.entity.HealthRecordEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="metric_type" property="metricType"/>
+        <result column="metric_value" property="metricValue"/>
+        <result column="unit" property="unit"/>
+        <result column="record_time" property="recordTime"/>
+        <result column="remark" property="remark"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.HealthRecordEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into health_record(user_id, metric_type, metric_value, unit, record_time, remark, created_at)
+        values (#{userId}, #{metricType}, #{metricValue}, #{unit}, #{recordTime}, #{remark}, now())
+    </insert>
+
+    <select id="selectById" resultMap="HealthRecordResultMap">
+        select id, user_id, metric_type, metric_value, unit, record_time, remark, created_at
+        from health_record
+        where id = #{id} and user_id = #{userId}
+    </select>
+
+    <select id="selectByCondition" resultMap="HealthRecordResultMap">
+        select id, user_id, metric_type, metric_value, unit, record_time, remark, created_at
+        from health_record
+        where user_id = #{userId}
+        <if test="metricType != null and metricType != ''">
+            and metric_type = #{metricType}
+        </if>
+        <if test="startTime != null">
+            and record_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and record_time &lt;= #{endTime}
+        </if>
+        order by record_time desc
+    </select>
+
+    <select id="selectTrend" resultMap="HealthRecordResultMap">
+        select id, user_id, metric_type, metric_value, unit, record_time, remark, created_at
+        from health_record
+        where user_id = #{userId}
+          and metric_type = #{metricType}
+        <if test="startTime != null">
+            and record_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and record_time &lt;= #{endTime}
+        </if>
+        order by record_time asc
+    </select>
+
+    <update id="updateById" parameterType="com.jianjian.ai.zksh.domain.entity.HealthRecordEntity">
+        update health_record
+        set metric_type = #{metricType},
+            metric_value = #{metricValue},
+            unit = #{unit},
+            record_time = #{recordTime},
+            remark = #{remark}
+        where id = #{id} and user_id = #{userId}
+    </update>
+
+    <delete id="deleteById">
+        delete from health_record
+        where id = #{id} and user_id = #{userId}
+    </delete>
+
+    <select id="countByUserId" resultType="long">
+        select count(1) from health_record where user_id = #{userId}
+    </select>
+
+    <select id="selectLatestByUserId" resultMap="HealthRecordResultMap">
+        select id, user_id, metric_type, metric_value, unit, record_time, remark, created_at
+        from health_record
+        where user_id = #{userId}
+        order by record_time desc
+        limit 1
+    </select>
+
+    <select id="selectRecentRecords" resultMap="HealthRecordResultMap">
+        select id, user_id, metric_type, metric_value, unit, record_time, remark, created_at
+        from health_record
+        where created_at &gt;= #{startTime}
+        order by created_at desc
+        limit 500
+    </select>
+</mapper>

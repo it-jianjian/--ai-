@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.NotificationMapper">
+
+    <resultMap id="NotificationResultMap" type="com.jianjian.ai.zksh.domain.entity.NotificationEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="is_read" property="isRead"/>
+        <result column="notify_time" property="notifyTime"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.NotificationEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into notification(user_id, title, content, type, is_read, notify_time, created_at)
+        values (#{userId}, #{title}, #{content}, #{type}, #{isRead}, #{notifyTime}, now())
+    </insert>
+
+    <select id="selectByUserId" resultMap="NotificationResultMap">
+        select id, user_id, title, content, type, is_read, notify_time, created_at
+        from notification
+        where user_id = #{userId}
+        <if test="isRead != null">
+            and is_read = #{isRead}
+        </if>
+        order by notify_time desc, id desc
+    </select>
+
+    <select id="selectUnreadAfterId" resultMap="NotificationResultMap">
+        select id, user_id, title, content, type, is_read, notify_time, created_at
+        from notification
+        where user_id = #{userId}
+          and is_read = 0
+          and id &gt; #{lastId}
+        order by id asc
+        limit #{limit}
+    </select>
+
+    <select id="countByUserTypeAndContent" resultType="int">
+        select count(1)
+        from notification
+        where user_id = #{userId}
+          and type = #{type}
+          and content = #{content}
+    </select>
+
+    <update id="readById">
+        update notification
+        set is_read = 1
+        where id = #{id} and user_id = #{userId}
+    </update>
+</mapper>

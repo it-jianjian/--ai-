@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.ReminderRuleMapper">
+
+    <resultMap id="ReminderRuleResultMap" type="com.jianjian.ai.zksh.domain.entity.ReminderRuleEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="interval_minutes" property="intervalMinutes"/>
+        <result column="enabled" property="enabled"/>
+        <result column="next_trigger_time" property="nextTriggerTime"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.ReminderRuleEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into reminder_rule(user_id, title, content, type, interval_minutes, enabled, next_trigger_time, created_at)
+        values (#{userId}, #{title}, #{content}, #{type}, #{intervalMinutes}, #{enabled}, #{nextTriggerTime}, now())
+    </insert>
+
+    <select id="selectByUserId" resultMap="ReminderRuleResultMap">
+        select id, user_id, title, content, type, interval_minutes, enabled, next_trigger_time, created_at
+        from reminder_rule
+        where user_id = #{userId}
+        order by id desc
+    </select>
+
+    <select id="selectDueRules" resultMap="ReminderRuleResultMap">
+        select id, user_id, title, content, type, interval_minutes, enabled, next_trigger_time, created_at
+        from reminder_rule
+        where enabled = 1 and next_trigger_time &lt;= #{now}
+        order by id asc
+    </select>
+
+    <update id="updateNextTriggerTime">
+        update reminder_rule
+        set next_trigger_time = #{nextTriggerTime}
+        where id = #{id}
+    </update>
+</mapper>

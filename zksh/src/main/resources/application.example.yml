@@ -1,0 +1,156 @@
+# =============================================================================
+# 配置模板（可复制为 application.yml 或 application-local.yml 后按需填写）
+# 敏感信息请用环境变量注入，不要将含真实密钥的 yml 提交到 Git。
+#
+# 常用环境变量一览（任选其一或多）：
+#   MYSQL_URL / MYSQL_USERNAME / MYSQL_PASSWORD
+#   REDIS_HOST / REDIS_PORT / REDIS_PASSWORD（无密码可留空）
+#   RABBITMQ_HOST / RABBITMQ_PORT / RABBITMQ_USERNAME / RABBITMQ_PASSWORD / RABBITMQ_VHOST
+#   JWT_SECRET
+#   API_KEY（DashScope 等 OpenAI 兼容接口）
+#   REPORT_OCR_APPCODE（若启用阿里云 OCR）
+#   RAG_EMBEDDING_API_KEY / RAG_RERANK_API_KEY（可缺省为与 API_KEY 相同）
+#   XXL_JOB_ADMIN_ADDRESSES / XXL_JOB_ACCESS_TOKEN
+# =============================================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/zksh?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:5s}
+  servlet:
+    multipart:
+      max-file-size: ${MULTIPART_MAX_FILE_SIZE:20MB}
+      max-request-size: ${MULTIPART_MAX_REQUEST_SIZE:25MB}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: ${RABBITMQ_VHOST:/}
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.jianjian.ai.zksh.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expire-hours: ${JWT_EXPIRE_HOURS:72}
+  login:
+    code-expire-minutes: ${LOGIN_CODE_EXPIRE_MINUTES:5}
+    code-prefix: ${LOGIN_CODE_PREFIX:zksh:login:code:}
+  notify:
+    schedule-ms: ${NOTIFY_SCHEDULE_MS:60000}
+    local-schedule-enabled: ${NOTIFY_LOCAL_SCHEDULE_ENABLED:true}
+  report:
+    storage-dir: ${REPORT_STORAGE_DIR:${user.home}/zksh/storage/reports}
+    pdf:
+      max-pages: ${REPORT_PDF_MAX_PAGES:3}
+      render-dpi: ${REPORT_PDF_RENDER_DPI:180}
+    ocr:
+      base-url: ${REPORT_OCR_BASE_URL:https://tysbgpu.market.alicloudapi.com}
+      path: ${REPORT_OCR_PATH:/api/predict/ocr_general}
+      appcode: ${REPORT_OCR_APPCODE:}
+      timeout-ms: ${REPORT_OCR_TIMEOUT_MS:15000}
+    mq:
+      exchange: ${REPORT_MQ_EXCHANGE:zksh.report.exchange}
+      routing-key: ${REPORT_MQ_ROUTING_KEY:zksh.report.task.created}
+      queue: ${REPORT_MQ_QUEUE:zksh.report.task.created.queue}
+
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: ${LANGCHAIN4J_OPENAI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      api-key: ${API_KEY:}
+      model-name: ${LANGCHAIN4J_CHAT_MODEL_NAME:qwen-max-latest}
+      log-requests: ${LANGCHAIN4J_LOG_REQUESTS:false}
+      log-responses: ${LANGCHAIN4J_LOG_RESPONSES:false}
+    streaming-chat-model:
+      base-url: ${LANGCHAIN4J_OPENAI_STREAMING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      api-key: ${API_KEY:}
+      model-name: ${LANGCHAIN4J_STREAMING_MODEL_NAME:qwen-max-latest}
+      log-requests: ${LANGCHAIN4J_STREAMING_LOG_REQUESTS:false}
+      log-responses: ${LANGCHAIN4J_STREAMING_LOG_RESPONSES:false}
+
+logging:
+  level:
+    dev.langchain4j: ${LOG_LEVEL_LANGCHAIN4J:info}
+
+ai:
+  session-topic:
+    llm-enabled: ${AI_SESSION_TOPIC_LLM_ENABLED:true}
+    timeout-ms: ${AI_SESSION_TOPIC_TIMEOUT_MS:1200}
+    max-length: ${AI_SESSION_TOPIC_MAX_LENGTH:24}
+  workflow:
+    enabled: ${AI_WORKFLOW_ENABLED:true}
+    continue-on-error: ${AI_WORKFLOW_CONTINUE_ON_ERROR:true}
+    default-timeout-ms: ${AI_WORKFLOW_DEFAULT_TIMEOUT_MS:1200}
+    rewrite:
+      enabled: ${AI_WORKFLOW_REWRITE_ENABLED:true}
+      timeout-ms: ${AI_WORKFLOW_REWRITE_TIMEOUT_MS:1200}
+    topic:
+      enabled: ${AI_WORKFLOW_TOPIC_ENABLED:true}
+      timeout-ms: ${AI_WORKFLOW_TOPIC_TIMEOUT_MS:1200}
+    answer:
+      enabled: ${AI_WORKFLOW_ANSWER_ENABLED:true}
+      timeout-ms: ${AI_WORKFLOW_ANSWER_TIMEOUT_MS:1200}
+  memory-summary:
+    enabled: ${AI_MEMORY_SUMMARY_ENABLED:true}
+    keep-recent-messages: ${AI_MEMORY_SUMMARY_KEEP_RECENT:12}
+    timeout-ms: ${AI_MEMORY_SUMMARY_TIMEOUT_MS:1800}
+
+qdrant:
+  url: ${QDRANT_URL:http://localhost:6333}
+  collection: ${QDRANT_COLLECTION:zksh_knowledge_chunks}
+
+rag:
+  embedding:
+    provider: ${RAG_EMBEDDING_PROVIDER:openai_compatible}
+    base-url: ${RAG_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    api-key: ${RAG_EMBEDDING_API_KEY:${API_KEY:}}
+    model-name: ${RAG_EMBEDDING_MODEL_NAME:text-embedding-v4}
+    timeout-ms: ${RAG_EMBEDDING_TIMEOUT_MS:15000}
+  rerank:
+    provider: ${RAG_RERANK_PROVIDER:dashscope}
+    base-url: ${RAG_RERANK_BASE_URL:https://dashscope.aliyuncs.com/api/v1/services/rerank}
+    api-key: ${RAG_RERANK_API_KEY:${API_KEY:}}
+    model-name: ${RAG_RERANK_MODEL_NAME:gte-rerank-v2}
+    top-n: ${RAG_RERANK_TOP_N:30}
+    timeout-ms: ${RAG_RERANK_TIMEOUT_MS:15000}
+  hybrid:
+    enabled: ${RAG_HYBRID_ENABLED:true}
+    vector-top-n: ${RAG_HYBRID_VECTOR_TOP_N:30}
+    keyword-top-n: ${RAG_HYBRID_KEYWORD_TOP_N:30}
+    merge-limit: ${RAG_HYBRID_MERGE_LIMIT:50}
+    final-top-k: ${RAG_HYBRID_FINAL_TOP_K:6}
+    vector-score-threshold: ${RAG_HYBRID_VECTOR_THRESHOLD:0.3}
+    rrf-k: ${RAG_HYBRID_RRF_K:60}
+  rewrite:
+    enabled: ${RAG_REWRITE_ENABLED:true}
+    timeout-ms: ${RAG_REWRITE_TIMEOUT_MS:1200}
+    max-length: ${RAG_REWRITE_MAX_LENGTH:120}
+
+xxl:
+  job:
+    enabled: ${XXL_JOB_ENABLED:false}
+    admin-addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8081/xxl-job-admin}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
+    executor:
+      appname: ${XXL_JOB_EXECUTOR_APPNAME:zksh-notify-executor}
+      ip: ${XXL_JOB_EXECUTOR_IP:}
+      port: ${XXL_JOB_EXECUTOR_PORT:9999}
+      logpath: ${XXL_JOB_LOG_PATH:${user.home}/zksh/logs/xxl-job}
+      logretentiondays: ${XXL_JOB_LOG_RETENTION_DAYS:30}

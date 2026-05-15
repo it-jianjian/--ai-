@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.report.mapper.ReportTaskMapper">
+
+    <resultMap id="ReportTaskResultMap" type="com.jianjian.ai.zksh.report.domain.entity.ReportTaskEntity">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="user_id" property="userId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="status" property="status"/>
+        <result column="stage" property="stage"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="retry_count" property="retryCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.report.domain.entity.ReportTaskEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into report_task(task_id, user_id, file_name, file_path, status, stage, error_message, retry_count, created_at, updated_at)
+        values (#{taskId}, #{userId}, #{fileName}, #{filePath}, #{status}, #{stage}, #{errorMessage}, #{retryCount}, now(), now())
+    </insert>
+
+    <select id="selectByTaskId" resultMap="ReportTaskResultMap">
+        select id, task_id, user_id, file_name, file_path, status, stage, error_message, retry_count, created_at, updated_at
+        from report_task
+        where task_id = #{taskId} and user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectByTaskIdNoUser" resultMap="ReportTaskResultMap">
+        select id, task_id, user_id, file_name, file_path, status, stage, error_message, retry_count, created_at, updated_at
+        from report_task
+        where task_id = #{taskId}
+        limit 1
+    </select>
+
+    <update id="updateStatusStage">
+        update report_task
+        set status = #{status},
+            stage = #{stage},
+            error_message = #{errorMessage},
+            updated_at = now()
+        where task_id = #{taskId}
+    </update>
+
+    <update id="touchRetry">
+        update report_task
+        set retry_count = #{retryCount},
+            updated_at = now()
+        where task_id = #{taskId}
+    </update>
+
+    <select id="selectRecentByUserId" resultType="com.jianjian.ai.zksh.report.domain.vo.ReportTaskListItemVO">
+        select t.task_id as taskId,
+               t.file_name as fileName,
+               t.status as status,
+               t.stage as stage,
+               t.error_message as errorMessage,
+               (
+                   select i.summary
+                   from report_interpretation i
+                   where i.task_id = t.task_id
+                   order by i.id desc
+                   limit 1
+               ) as summary,
+               t.created_at as createdAt,
+               t.updated_at as updatedAt
+        from report_task t
+        where t.user_id = #{userId}
+        order by t.created_at desc
+        limit #{limit}
+    </select>
+</mapper>
+

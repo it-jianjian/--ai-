@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.report.mapper.ReportOcrResultMapper">
+
+    <resultMap id="ReportOcrResultResultMap" type="com.jianjian.ai.zksh.report.domain.entity.ReportOcrResultEntity">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="ocr_text" property="ocrText"/>
+        <result column="raw_json" property="rawJson"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.report.domain.entity.ReportOcrResultEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into report_ocr_result(task_id, ocr_text, raw_json, created_at)
+        values (#{taskId}, #{ocrText}, #{rawJson}, now())
+    </insert>
+
+    <select id="selectByTaskId" resultMap="ReportOcrResultResultMap">
+        select id, task_id, ocr_text, raw_json, created_at
+        from report_ocr_result
+        where task_id = #{taskId}
+        order by id desc
+        limit 1
+    </select>
+</mapper>
+

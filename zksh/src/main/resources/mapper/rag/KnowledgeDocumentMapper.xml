@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.KnowledgeDocumentMapper">
+
+    <resultMap id="KnowledgeDocumentResultMap" type="com.jianjian.ai.zksh.domain.entity.KnowledgeDocumentEntity">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="source" property="source"/>
+        <result column="tags" property="tags"/>
+        <result column="status" property="status"/>
+        <result column="chunk_count" property="chunkCount"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.KnowledgeDocumentEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into knowledge_document(title, source, tags, status, chunk_count, created_by, created_at, updated_at)
+        values (#{title}, #{source}, #{tags}, #{status}, #{chunkCount}, #{createdBy}, now(), now())
+    </insert>
+
+    <select id="selectById" resultMap="KnowledgeDocumentResultMap">
+        select id, title, source, tags, status, chunk_count, created_by, created_at, updated_at
+        from knowledge_document
+        where id = #{id}
+    </select>
+
+    <select id="selectByStatus" resultMap="KnowledgeDocumentResultMap">
+        select id, title, source, tags, status, chunk_count, created_by, created_at, updated_at
+        from knowledge_document
+        where status = #{status}
+        order by updated_at desc, id desc
+    </select>
+
+    <select id="selectByCreatedBy" resultMap="KnowledgeDocumentResultMap">
+        select id, title, source, tags, status, chunk_count, created_by, created_at, updated_at
+        from knowledge_document
+        where created_by = #{createdBy}
+        order by updated_at desc, id desc
+    </select>
+
+    <update id="updateStatus">
+        update knowledge_document
+        set status = #{status},
+            chunk_count = #{chunkCount},
+            updated_at = now()
+        where id = #{id}
+    </update>
+</mapper>
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.KnowledgeChunkMapper">
+
+    <resultMap id="KnowledgeChunkResultMap" type="com.jianjian.ai.zksh.domain.entity.KnowledgeChunkEntity">
+        <id column="id" property="id"/>
+        <result column="doc_id" property="docId"/>
+        <result column="chunk_index" property="chunkIndex"/>
+        <result column="content" property="content"/>
+        <result column="token_count" property="tokenCount"/>
+        <result column="qdrant_point_id" property="qdrantPointId"/>
+        <result column="metadata_json" property="metadataJson"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.KnowledgeChunkEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into knowledge_chunk(doc_id, chunk_index, content, token_count, qdrant_point_id, metadata_json, created_at)
+        values (#{docId}, #{chunkIndex}, #{content}, #{tokenCount}, #{qdrantPointId}, #{metadataJson}, now())
+    </insert>
+
+    <select id="selectByDocId" resultMap="KnowledgeChunkResultMap">
+        select id, doc_id, chunk_index, content, token_count, qdrant_point_id, metadata_json, created_at
+        from knowledge_chunk
+        where doc_id = #{docId}
+        order by chunk_index asc, id asc
+    </select>
+
+    <select id="selectByIds" resultMap="KnowledgeChunkResultMap">
+        select id, doc_id, chunk_index, content, token_count, qdrant_point_id, metadata_json, created_at
+        from knowledge_chunk
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectByQdrantPointIds" resultMap="KnowledgeChunkResultMap">
+        select id, doc_id, chunk_index, content, token_count, qdrant_point_id, metadata_json, created_at
+        from knowledge_chunk
+        where qdrant_point_id in
+        <foreach collection="qdrantPointIds" item="pid" open="(" separator="," close=")">
+            #{pid}
+        </foreach>
+    </select>
+
+    <select id="searchByKeyword" resultMap="KnowledgeChunkResultMap">
+        select id, doc_id, chunk_index, content, token_count, qdrant_point_id, metadata_json, created_at
+        from knowledge_chunk
+        where (
+            match(content) against(#{keyword} in natural language mode)
+        ) or content like concat('%', #{keyword}, '%')
+        order by
+            match(content) against(#{keyword} in natural language mode) desc,
+            case when content like concat(#{keyword}, '%') then 3 else 0 end desc,
+            case when content like concat('%', #{keyword}, '%') then 1 else 0 end desc,
+            id desc
+        limit #{limit}
+    </select>
+
+    <update id="updateQdrantPointId">
+        update knowledge_chunk
+        set qdrant_point_id = #{qdrantPointId}
+        where id = #{id}
+    </update>
+</mapper>
+

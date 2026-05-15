@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.jianjian.ai.zksh.domain.entity.UserEntity">
+        <id column="id" property="id"/>
+        <result column="phone" property="phone"/>
+        <result column="nickname" property="nickname"/>
+        <result column="gender" property="gender"/>
+        <result column="age" property="age"/>
+        <result column="height" property="height"/>
+        <result column="weight" property="weight"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="UserResultMap">
+        select id, phone, nickname, gender, age, height, weight, created_at, updated_at
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="selectByPhone" resultMap="UserResultMap">
+        select id, phone, nickname, gender, age, height, weight, created_at, updated_at
+        from user
+        where phone = #{phone}
+    </select>
+
+    <select id="existsByPhone" resultType="int">
+        select count(1)
+        from user
+        where phone = #{phone}
+    </select>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.UserEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into user(phone, nickname, gender, age, height, weight, created_at, updated_at)
+        values (#{phone}, #{nickname}, #{gender}, #{age}, #{height}, #{weight}, now(), now())
+    </insert>
+
+    <update id="updateProfile" parameterType="com.jianjian.ai.zksh.domain.entity.UserEntity">
+        update user
+        set nickname = #{nickname},
+            gender = #{gender},
+            age = #{age},
+            height = #{height},
+            weight = #{weight},
+            updated_at = now()
+        where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.AiChatSessionMapper">
+
+    <resultMap id="AiChatSessionResultMap" type="com.jianjian.ai.zksh.domain.entity.AiChatSessionEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="last_message_at" property="lastMessageAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.AiChatSessionEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into ai_chat_session(user_id, title, created_at, updated_at, last_message_at)
+        values (#{userId}, #{title}, now(), now(), now())
+    </insert>
+
+    <select id="selectByIdAndUserId" resultMap="AiChatSessionResultMap">
+        select id, user_id, title, created_at, updated_at, last_message_at
+        from ai_chat_session
+        where id = #{id}
+          and user_id = #{userId}
+          and deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultMap="AiChatSessionResultMap">
+        select id, user_id, title, created_at, updated_at, last_message_at
+        from ai_chat_session
+        where user_id = #{userId}
+          and deleted = 0
+        order by last_message_at desc, id desc
+    </select>
+
+    <update id="touchById">
+        update ai_chat_session
+        set updated_at = now(),
+            last_message_at = #{lastMessageAt}
+        where id = #{id}
+          and deleted = 0
+    </update>
+
+    <update id="updateTitle">
+        update ai_chat_session
+        set title = #{title},
+            updated_at = now()
+        where id = #{id}
+          and user_id = #{userId}
+          and deleted = 0
+    </update>
+
+    <update id="softDelete">
+        update ai_chat_session
+        set deleted = 1,
+            updated_at = now()
+        where id = #{id}
+          and user_id = #{userId}
+          and deleted = 0
+    </update>
+</mapper>

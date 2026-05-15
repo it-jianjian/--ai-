@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.report.mapper.ReportTaskStepLogMapper">
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.report.domain.entity.ReportTaskStepLogEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into report_task_step_log(task_id, step_code, step_name, status, detail, created_at)
+        values (#{taskId}, #{stepCode}, #{stepName}, #{status}, #{detail}, now())
+    </insert>
+
+    <select id="selectByTaskId" resultType="com.jianjian.ai.zksh.report.domain.vo.ReportTaskStepLogVO">
+        select step_code as stepCode,
+               step_name as stepName,
+               status as status,
+               detail as detail,
+               created_at as createdAt
+        from report_task_step_log
+        where task_id = #{taskId}
+        order by id asc
+    </select>
+</mapper>
+

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.RagRetrievalLogMapper">
+
+    <resultMap id="RagRetrievalLogResultMap" type="com.jianjian.ai.zksh.domain.entity.RagRetrievalLogEntity">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="session_id" property="sessionId"/>
+        <result column="query_text" property="queryText"/>
+        <result column="recall_count" property="recallCount"/>
+        <result column="topk_count" property="topkCount"/>
+        <result column="latency_ms" property="latencyMs"/>
+        <result column="result_snapshot_json" property="resultSnapshotJson"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.RagRetrievalLogEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rag_retrieval_log(user_id, session_id, query_text, recall_count, topk_count, latency_ms,
+                                      result_snapshot_json, created_at)
+        values (#{userId}, #{sessionId}, #{queryText}, #{recallCount}, #{topkCount}, #{latencyMs},
+                #{resultSnapshotJson}, now())
+    </insert>
+</mapper>
+

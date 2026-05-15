@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianjian.ai.zksh.mapper.AiChatMessageMapper">
+
+    <resultMap id="AiChatMessageResultMap" type="com.jianjian.ai.zksh.domain.entity.AiChatMessageEntity">
+        <id column="id" property="id"/>
+        <result column="session_id" property="sessionId"/>
+        <result column="user_id" property="userId"/>
+        <result column="role" property="role"/>
+        <result column="content" property="content"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="tokens" property="tokens"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.jianjian.ai.zksh.domain.entity.AiChatMessageEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into ai_chat_message(session_id, user_id, role, content, risk_level, tokens, created_at)
+        values (#{sessionId}, #{userId}, #{role}, #{content}, #{riskLevel}, #{tokens}, now())
+    </insert>
+
+    <select id="selectBySessionId" resultMap="AiChatMessageResultMap">
+        select id, session_id, user_id, role, content, risk_level, tokens, created_at
+        from ai_chat_message
+        where session_id = #{sessionId}
+          and user_id = #{userId}
+        order by id asc
+    </select>
+
+    <select id="countBySessionId" resultType="int">
+        select count(1)
+        from ai_chat_message
+        where session_id = #{sessionId}
+          and user_id = #{userId}
+    </select>
+
+    <delete id="deleteBySessionId">
+        delete from ai_chat_message
+        where session_id = #{sessionId}
+          and user_id = #{userId}
+    </delete>
+</mapper>
